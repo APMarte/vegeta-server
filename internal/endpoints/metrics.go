@@ -66,9 +66,9 @@ func (e *Endpoints) HandlerFunc(p *Prometheus) gin.HandlerFunc {
 				//p.reqStsCode.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Observe(element.StatusCodes)
 			}
 
-			jsonHistogramReport := e.GetHistogram(elem.ID, c)
-
-			fmt.Printf(jsonHistogramReport)
+			//add histogram metrics to prometheus
+			//TODO
+			//jsonHistogramReport := e.GetHistogram(elem.ID, c)
 
 		}
 
