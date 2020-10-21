@@ -26,7 +26,7 @@ type JSONReportResponse struct {
 	Wait        int            `json:"wait"`
 	Requests    int            `json:"requests"`
 	Rate        float64        `json:"rate"`
-	Success     int            `json:"success"`
+	Success     float64        `json:"success"`
 	StatusCodes map[string]int `json:"status_codes"`
 	Errors      []string       `json:"errors"`
 }

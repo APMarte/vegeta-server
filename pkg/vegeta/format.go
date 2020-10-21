@@ -23,6 +23,8 @@ func NewFormat(typ string) Format {
 		return NewBinaryFormat()
 	case "histogram":
 		return NewHistogramFormat()
+	case "hdrplot":
+		return NewHDRHistogramFormat()
 	}
 	return NewJSONFormat() // default
 }
@@ -129,4 +131,34 @@ func (h *HistogramFormat) String() string {
 // Meta returns the meta information stored in the Format
 func (h *HistogramFormat) Meta() MetaInfo {
 	return h.meta
+}
+
+// type HDRHistogramFormat struct {
+// 	value      float64
+// 	percentile float64
+// 	totalCount int
+// 	percentile float64
+// }
+
+type HDRHistogramFormat string
+
+func NewHDRHistogramFormat() *HDRHistogramFormat {
+	f := HDRHistogramFormat("hdrplot")
+	return &f
+}
+
+// SetMeta will set the meta information
+// no-op method
+func (p *HDRHistogramFormat) SetMeta(key, value string) {
+}
+
+// String implements Stringer for JSONFormat
+func (p *HDRHistogramFormat) String() string {
+	return string(*p)
+}
+
+// Meta returns the meta information stored in the Format
+// no-op method
+func (p *HDRHistogramFormat) Meta() (m MetaInfo) {
+	return nil
 }

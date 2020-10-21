@@ -29,7 +29,7 @@ type AttackParams struct {
 	Insecure  bool `json:"insecure,omitempty"`
 	Keepalive bool `json:"keepalive,omitempty"`
 
-	Target  Target         `json:"target,omitempty" binding:"required"`
+	Target  []Target       `json:"target,omitempty" binding:"required"`
 	Headers []AttackHeader `json:"headers,omitempty"`
 }
 

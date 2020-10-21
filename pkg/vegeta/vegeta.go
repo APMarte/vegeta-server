@@ -59,7 +59,7 @@ func attackWithOpts(opts *AttackOpts) (*vegeta.Attacker, <-chan *vegeta.Result) 
 		vegeta.LocalAddr(*opts.Laddr.IPAddr),
 	)
 
-	tr := vegeta.NewStaticTargeter(opts.Target)
+	tr := vegeta.NewStaticTargeter(opts.Target...)
 
 	return atk, atk.Attack(tr, opts.Rate, opts.Duration, opts.Name)
 }

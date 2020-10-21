@@ -65,6 +65,8 @@ func SetupRouter(d dispatcher.IDispatcher, r reporter.IReporter) *gin.Engine {
 
 	e := NewEndpoints(d, r)
 
+	prom := NewPrometheus("vegeta")
+
 	// api/v1 router group
 	v1 := router.Group("/api/v1")
 	{
@@ -77,6 +79,8 @@ func SetupRouter(d dispatcher.IDispatcher, r reporter.IReporter) *gin.Engine {
 		// Report endpoints
 		v1.GET("/report", e.GetReportEndpoint)
 		v1.GET("/report/:attackID", e.GetReportByIDEndpoint)
+
+		v1.GET("/metrics", e.HandlerFunc(prom))
 	}
 
 	return router

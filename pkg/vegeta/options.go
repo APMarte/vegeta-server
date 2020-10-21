@@ -16,7 +16,7 @@ import (
 
 // AttackOpts aggregates the attack function command options
 type AttackOpts struct {
-	Target      vegeta.Target
+	Target      []vegeta.Target
 	Name        string
 	Body        string
 	Cert        string
@@ -71,11 +71,15 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 	}
 
 	// Set Target
-	tgt := vegeta.Target{
-		Method: params.Target.Method,
-		URL:    params.Target.URL,
-		Header: hdr,
-		Body:   bBody,
+	tgt := make([]vegeta.Target, len(params.Target))
+
+	for index, element := range params.Target {
+		tgt[index] = vegeta.Target{
+			Method: element.Method,
+			URL:    element.URL,
+			Header: hdr,
+			Body:   bBody,
+		}
 	}
 
 	opts := &AttackOpts{

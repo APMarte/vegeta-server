@@ -30,6 +30,8 @@ type IDispatcher interface {
 	Get(string) (*models.AttackResponse, error)
 	// List the attack status, params and ID for all submitted attacks.
 	List(models.FilterParams) []*models.AttackResponse
+	// List Ids and parameters from all completed attacks (prometheus endpoint)
+	ListIds(models.FilterParams) []*models.AttackBaseInfo
 }
 
 type dispatcher struct {
@@ -190,6 +192,22 @@ func (d *dispatcher) List(filters models.FilterParams) []*models.AttackResponse 
 
 	for _, attackDetails := range d.db.GetAll(filters) {
 		resp := models.AttackResponse(attackDetails.AttackInfo)
+		responses = append(responses, &resp)
+	}
+	return responses
+}
+
+// List all submitted attacks (ID : Params)
+func (d *dispatcher) ListIds(filters models.FilterParams) []*models.AttackBaseInfo {
+	d.log(nil).Debug("getting attack list")
+
+	responses := make([]*models.AttackBaseInfo, 0)
+
+	for _, attackDetails := range d.db.GetAll(filters) {
+		resp := models.AttackBaseInfo{
+			ID:     attackDetails.AttackInfo.ID,
+			Params: attackDetails.AttackInfo.Params,
+		}
 		responses = append(responses, &resp)
 	}
 	return responses

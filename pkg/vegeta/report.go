@@ -22,6 +22,8 @@ const (
 	BinaryFormatString string = "binary"
 	// DefaultBucketString Default Bucket String
 	DefaultBucketString string = "0,500ms,1s,1.5s,2s,2.5s,3s"
+	//Histogram prometheus values
+	HistogramPlotString string = "hdrplot"
 )
 
 // CreateReportFromReader takes in an io.Reader with the vegeta gob, encoded result and
@@ -52,6 +54,9 @@ func CreateReportFromReader(reader io.Reader, id string, format Format) ([]byte,
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to unmarshal bucket %s", b))
 		}
 		rep, report = vegeta.NewHistogramReporter(&hist), &hist
+	case HistogramPlotString:
+		var hist vegeta.Metrics
+		rep, report = vegeta.NewHDRHistogramPlotReporter(&hist), &hist
 	default:
 		return nil, fmt.Errorf("format %s not supported", format)
 	}
