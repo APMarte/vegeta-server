@@ -8,7 +8,8 @@ type AttackHeader struct {
 
 // AttackParams request parameters
 type AttackParams struct {
-	Rate int `json:"rate,omitempty" binding:"required"`
+	ID   string `json:"id,omitempty"`
+	Rate int    `json:"rate,omitempty" binding:"required"`
 
 	Connections int64 `json:"connections,omitempty"`
 	Workers     int64 `json:"workers,omitempty"`
