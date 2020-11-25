@@ -103,15 +103,22 @@ var ResSuccessRatio = &Metric{
 	ID:          "resSuccessRatio",
 	Name:        "response_success_ratio",
 	Description: "The percentage of requests whose responses didn't error",
-	Type:        "summary",
+	Type:        "gauge_vec",
 	Args:        []string{"id", "rate", "duration"},
 }
 
 var ReqStsCode = &Metric{
 	ID:   "reqStsCode",
 	Name: "request_status_code",
-	Type: "summary",
-	Args: []string{"id", "rate", "duration"},
+	Type: "gauge_vec",
+	Args: []string{"id", "rate", "duration", "code"},
+}
+
+var Histogram = &Metric{
+	ID:   "Histogram",
+	Name: "request_duration_histogram",
+	Type: "histogram_vec",
+	Args: []string{"id"},
 }
 
 var StandardMetrics = []*Metric{
@@ -125,6 +132,9 @@ var StandardMetrics = []*Metric{
 	ReqLat95th,
 	ReqLat99th,
 	ReqLatMax,
+	ResSuccessRatio,
+	ReqStsCode,
+	Histogram,
 }
 
 // NewMetric associates prometheus.Collector based on Metric.Type
@@ -171,6 +181,7 @@ func NewMetric(m *Metric, subsystem string) prometheus.Collector {
 				Subsystem: subsystem,
 				Name:      m.Name,
 				Help:      m.Description,
+				Buckets:   []float64{0, 50, 100, 200, 500, 1000},
 			},
 			m.Args,
 		)

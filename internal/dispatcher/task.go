@@ -78,8 +78,15 @@ type task struct {
 }
 
 // NewTask returns a new instance of a task object
-func NewTask(updateCh chan UpdateMessage, params models.AttackParams) *task { //nolint: golint
-	id := uuid.NewV4().String()
+func NewTask(updateCh chan UpdateMessage, params models.AttackParams) *task {
+	prfix := ""
+
+	if params.ID != "" {
+		prfix = params.ID + "-"
+	}
+
+	//nolint: golint
+	id := prfix + uuid.NewV4().String() //nolint: golint
 	t := &task{
 		sync.RWMutex{},
 		id,

@@ -26,3 +26,6 @@ launch.json
 
 # DB
 *.db
+
+#vscode
+*__debug_bin

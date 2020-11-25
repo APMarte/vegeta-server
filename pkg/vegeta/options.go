@@ -18,7 +18,6 @@ import (
 type AttackOpts struct {
 	Target      []vegeta.Target
 	Name        string
-	Body        string
 	Cert        string
 	Key         string
 	RootCerts   []string
@@ -65,15 +64,16 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to resolve IP address: %s", params.Laddr))
 	}
 
-	bBody, err := base64.StdEncoding.DecodeString(params.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode params.Body")
-	}
-
 	// Set Target
 	tgt := make([]vegeta.Target, len(params.Target))
 
 	for index, element := range params.Target {
+
+		bBody, err := base64.StdEncoding.DecodeString(element.Body)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to decode params.Body")
+		}
+
 		tgt[index] = vegeta.Target{
 			Method: element.Method,
 			URL:    element.URL,

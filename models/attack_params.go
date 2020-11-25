@@ -8,7 +8,8 @@ type AttackHeader struct {
 
 // AttackParams request parameters
 type AttackParams struct {
-	Rate int `json:"rate,omitempty" binding:"required"`
+	ID   string `json:"id,omitempty"`
+	Rate int    `json:"rate,omitempty" binding:"required"`
 
 	Connections int64 `json:"connections,omitempty"`
 	Workers     int64 `json:"workers,omitempty"`
@@ -18,7 +19,6 @@ type AttackParams struct {
 	Key       string   `json:"key,omitempty"`
 	Laddr     string   `json:"laddr,omitempty"`
 	Duration  string   `json:"duration,omitempty" binding:"required"`
-	Body      string   `json:"body,omitempty"`
 	Cert      string   `json:"cert,omitempty"`
 	Resolvers string   `json:"resolvers,omitempty"`
 	RootCerts []string `json:"root-certs,omitempty"`
@@ -38,6 +38,7 @@ type Target struct {
 	Method string `json:"method,omitempty"`
 	URL    string `json:"URL,omitempty"`
 	Scheme string `json:"scheme,omitempty"`
+	Body   string `json:"body,omitempty"`
 }
 
 // AttackStatus as a string enum

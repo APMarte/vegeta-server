@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 	"vegeta-server/models"
 	"vegeta-server/pkg/vegeta"
@@ -17,8 +18,9 @@ type Prometheus struct {
 	reqCnt, reqRt                                             *prometheus.GaugeVec
 	reqDur, reqAttck, reqWait                                 *prometheus.GaugeVec
 	reqLatMean, reqLat50th, reqLat95th, reqLat99th, reqLatMax *prometheus.GaugeVec
-	reqStsCode                                                *prometheus.SummaryVec
-	resSuccessRatio                                           *prometheus.SummaryVec
+	reqStsCode                                                *prometheus.GaugeVec
+	resSuccessRatio                                           *prometheus.GaugeVec
+	histogram                                                 *prometheus.HistogramVec
 
 	MetricsList []*models.Metric
 }
@@ -43,6 +45,8 @@ func NewPrometheus(subsystem string) *Prometheus {
 func (e *Endpoints) HandlerFunc(p *Prometheus) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		var metricId string
+
 		attackInfo := e.GetIdList(c)
 		jsonReports := e.GetAllReports(c)
 
@@ -52,24 +56,43 @@ func (e *Endpoints) HandlerFunc(p *Prometheus) gin.HandlerFunc {
 					continue
 				}
 
-				p.reqCnt.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Requests))
-				p.reqRt.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Rate))
-				p.reqDur.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Duration + element.Wait))
-				p.reqAttck.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Duration))
-				p.reqWait.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Wait))
-				p.reqLatMean.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.Mean))
-				p.reqLat50th.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P50th))
-				p.reqLat95th.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P95th))
-				p.reqLat99th.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P99th))
-				p.reqLatMax.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.Max))
-				//p.resSuccessRatio.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(element.Success)
-				//p.reqStsCode.WithLabelValues(element.ID, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Observe(element.StatusCodes)
+				metricId = element.ID
+				p.reqCnt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Requests))
+				p.reqRt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Rate))
+				p.reqDur.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Duration + element.Wait))
+				p.reqAttck.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Duration))
+				p.reqWait.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Wait))
+				p.reqLatMean.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.Mean))
+				p.reqLat50th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P50th))
+				p.reqLat95th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P95th))
+				p.reqLat99th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P99th))
+				p.reqLatMax.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.Max))
+				p.resSuccessRatio.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(element.Success)
+
+				for key, mapElem := range element.StatusCodes {
+					p.reqStsCode.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration, key).Add(float64(mapElem))
+				}
+			}
+		}
+
+		//add histogram metrics to prometheus
+		jsonHistogramReport := e.GetHistogram(metricId, c)
+
+		for idx, value := range strings.Split(jsonHistogramReport, "\n") {
+
+			if idx == 0 || value == "" {
+				continue
 			}
 
-			//add histogram metrics to prometheus
-			//TODO
-			//jsonHistogramReport := e.GetHistogram(elem.ID, c)
+			ms := strings.Fields(value)[0]
 
+			tofloat, err := strconv.ParseFloat(ms, 64)
+
+			if err != nil {
+				continue
+			}
+
+			p.histogram.WithLabelValues(metricId).Observe(float64(tofloat))
 		}
 
 		h := promhttp.Handler()
@@ -106,9 +129,11 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 		case models.ReqLatMax:
 			p.reqLatMax = metric.(*prometheus.GaugeVec)
 		case models.ReqStsCode:
-			p.reqStsCode = metric.(*prometheus.SummaryVec)
+			p.reqStsCode = metric.(*prometheus.GaugeVec)
 		case models.ResSuccessRatio:
-			p.resSuccessRatio = metric.(*prometheus.SummaryVec)
+			p.resSuccessRatio = metric.(*prometheus.GaugeVec)
+		case models.Histogram:
+			p.histogram = metric.(*prometheus.HistogramVec)
 		}
 		metricDef.MetricCollector = metric
 	}
