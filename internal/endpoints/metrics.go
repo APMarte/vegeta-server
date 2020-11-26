@@ -57,20 +57,20 @@ func (e *Endpoints) HandlerFunc(p *Prometheus) gin.HandlerFunc {
 				}
 
 				metricId = element.ID
-				p.reqCnt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Requests))
-				p.reqRt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Rate))
-				p.reqDur.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Duration + element.Wait))
-				p.reqAttck.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Duration))
-				p.reqWait.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Wait))
-				p.reqLatMean.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.Mean))
-				p.reqLat50th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.P50th))
-				p.reqLat95th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.P95th))
-				p.reqLat99th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.P99th))
-				p.reqLatMax.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.Max))
-				p.resSuccessRatio.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(element.Success)
+				p.reqCnt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(float64(element.Requests))
+				p.reqRt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(float64(element.Rate))
+				p.reqDur.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Duration + element.Wait))
+				p.reqAttck.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Duration))
+				p.reqWait.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Wait))
+				p.reqLatMean.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Latencies.Mean))
+				p.reqLat50th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Latencies.P50th))
+				p.reqLat95th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Latencies.P95th))
+				p.reqLat99th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Latencies.P99th))
+				p.reqLatMax.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(milliseconds(element.Latencies.Max))
+				p.resSuccessRatio.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Set(element.Success)
 
 				for key, mapElem := range element.StatusCodes {
-					p.reqStsCode.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration, key).Add(float64(mapElem))
+					p.reqStsCode.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration, key).Set(float64(mapElem))
 				}
 			}
 		}
