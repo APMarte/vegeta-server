@@ -49,12 +49,6 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 	// Set timeout
 	timeout, _ := time.ParseDuration(params.Timeout)
 
-	// Set target headers
-	var hdr http.Header
-	for _, h := range params.Headers {
-		hdr.Add(h.Key, h.Value)
-	}
-
 	// Set resolvers
 	resolvers := strings.Split(params.Resolvers, ",")
 
@@ -72,6 +66,13 @@ func NewAttackOptsFromAttackParams(name string, params models.AttackParams) (*At
 		bBody, err := base64.StdEncoding.DecodeString(element.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to decode params.Body")
+		}
+
+		// Set target headers
+		var hdr = make(http.Header)
+
+		for _, h := range element.Headers {
+			hdr.Add(h.Key, h.Value)
 		}
 
 		tgt[index] = vegeta.Target{

@@ -181,7 +181,7 @@ func NewMetric(m *Metric, subsystem string) prometheus.Collector {
 				Subsystem: subsystem,
 				Name:      m.Name,
 				Help:      m.Description,
-				Buckets:   []float64{0, 50, 100, 200, 500, 1000},
+				Buckets:   []float64{0, 20, 50, 100, 500, 1000},
 			},
 			m.Args,
 		)

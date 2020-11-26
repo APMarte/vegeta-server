@@ -29,16 +29,16 @@ type AttackParams struct {
 	Insecure  bool `json:"insecure,omitempty"`
 	Keepalive bool `json:"keepalive,omitempty"`
 
-	Target  []Target       `json:"target,omitempty" binding:"required"`
-	Headers []AttackHeader `json:"headers,omitempty"`
+	Target []Target `json:"target,omitempty" binding:"required"`
 }
 
 // Target request target parameters
 type Target struct {
-	Method string `json:"method,omitempty"`
-	URL    string `json:"URL,omitempty"`
-	Scheme string `json:"scheme,omitempty"`
-	Body   string `json:"body,omitempty"`
+	Method  string         `json:"method,omitempty"`
+	URL     string         `json:"URL,omitempty"`
+	Scheme  string         `json:"scheme,omitempty"`
+	Body    string         `json:"body,omitempty"`
+	Headers []AttackHeader `json:"headers,omitempty"`
 }
 
 // AttackStatus as a string enum

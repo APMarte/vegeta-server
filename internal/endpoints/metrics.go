@@ -59,14 +59,14 @@ func (e *Endpoints) HandlerFunc(p *Prometheus) gin.HandlerFunc {
 				metricId = element.ID
 				p.reqCnt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Requests))
 				p.reqRt.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(float64(element.Rate))
-				p.reqDur.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Duration + element.Wait))
-				p.reqAttck.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Duration))
-				p.reqWait.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Wait))
-				p.reqLatMean.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.Mean))
-				p.reqLat50th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P50th))
-				p.reqLat95th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P95th))
-				p.reqLat99th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.P99th))
-				p.reqLatMax.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(makeTimestamp(element.Latencies.Max))
+				p.reqDur.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Duration + element.Wait))
+				p.reqAttck.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Duration))
+				p.reqWait.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Wait))
+				p.reqLatMean.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.Mean))
+				p.reqLat50th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.P50th))
+				p.reqLat95th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.P95th))
+				p.reqLat99th.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.P99th))
+				p.reqLatMax.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(milliseconds(element.Latencies.Max))
 				p.resSuccessRatio.WithLabelValues(metricId, strconv.Itoa(elem.Params.Rate), elem.Params.Duration).Add(element.Success)
 
 				for key, mapElem := range element.StatusCodes {
@@ -181,4 +181,11 @@ func (e *Endpoints) GetHistogram(id string, c *gin.Context) string {
 
 func makeTimestamp(value int) float64 {
 	return float64(value) / float64(time.Second)
+}
+
+func milliseconds(d int) float64 {
+	convertMs := time.Duration(d)
+
+	msec, nsec := convertMs/time.Millisecond, convertMs%time.Millisecond
+	return float64(msec) + float64(nsec)/1e6
 }
