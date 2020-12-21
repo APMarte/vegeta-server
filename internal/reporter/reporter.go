@@ -19,6 +19,9 @@ type IReporter interface {
 	// Get report in specified format (supported: JSON/Histogram/Text
 	GetInFormat(string, vegeta.Format) ([]byte, error)
 
+	//Get Histogram values to Prometheus
+	GetHistogramMetricInFormat(string) ([]byte, error)
+
 	// Delete report from store
 	Delete(string) error
 }
@@ -89,6 +92,21 @@ func (r *reporter) GetInFormat(id string, format vegeta.Format) ([]byte, error) 
 	}
 
 	report, err := vegeta.CreateReportFromReader(bytes.NewBuffer(result), attack.ID, format)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create report from reader")
+	}
+	return report, nil
+}
+
+// GetInFormat returns a report in the specified format.
+func (r *reporter) GetHistogramMetricInFormat(id string) ([]byte, error) {
+	attack, err := r.db.GetByID(id)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to get attack with ID %s", id))
+	}
+
+	result := attack.Result
+	report, err := vegeta.CreateHistogramFromReader(bytes.NewBuffer(result), attack.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create report from reader")
 	}

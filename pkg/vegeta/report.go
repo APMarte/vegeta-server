@@ -103,6 +103,35 @@ decode:
 	return buf.Bytes(), nil
 }
 
+// CreateHistogramFromReader takes in an io.Reader with the vegeta gob, encoded result and
+// returns the decoded result as a byte array
+func CreateHistogramFromReader(reader io.Reader, id string) ([]byte, error) {
+	dec := vegeta.DecoderFor(reader)
+
+	var metrics []vegeta.Result
+
+decode:
+	for {
+		var r vegeta.Result
+		err := dec.Decode(&r)
+		if err != nil {
+			if err == io.EOF {
+				break decode
+			}
+			return nil, errors.Wrap(err, "failed to decode result")
+		}
+
+		metrics = append(metrics, r)
+	}
+
+	b, err := json.Marshal(metrics)
+	if err != nil {
+		return nil, errors.Wrap(err, "reporter failed")
+	}
+
+	return b, nil
+}
+
 func addID(report *bytes.Buffer, id string) []byte {
 	return append([]byte(fmt.Sprintf("ID %s\n", id)), report.Bytes()...)
 }

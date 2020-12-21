@@ -2,12 +2,9 @@ package endpoints
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
-	"strings"
 	"time"
 	"vegeta-server/models"
-	"vegeta-server/pkg/vegeta"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -76,23 +73,12 @@ func (e *Endpoints) HandlerFunc(p *Prometheus) gin.HandlerFunc {
 		}
 
 		//add histogram metrics to prometheus
-		jsonHistogramReport := e.GetHistogram(metricId, c)
+		jsonHistogramReport := e.GetHistogramMetric(metricId, c)
 
-		for idx, value := range strings.Split(jsonHistogramReport, "\n") {
+		for _, value := range jsonHistogramReport {
 
-			if idx == 0 || value == "" {
-				continue
-			}
-
-			ms := strings.Fields(value)[0]
-
-			tofloat, err := strconv.ParseFloat(ms, 64)
-
-			if err != nil {
-				continue
-			}
-
-			p.histogram.WithLabelValues(metricId).Observe(float64(tofloat))
+			mili := millisecondsLatencies(value.Latency)
+			p.histogram.WithLabelValues(metricId).Observe(mili)
 		}
 
 		h := promhttp.Handler()
@@ -165,18 +151,17 @@ func (e *Endpoints) GetAllReports(c *gin.Context) []models.JSONReportResponse {
 	return jsonReports
 }
 
-func (e *Endpoints) GetHistogram(id string, c *gin.Context) string {
+func (e *Endpoints) GetHistogramMetric(id string, c *gin.Context) []models.SeqResult {
 
-	format := vegeta.NewFormat("hdrplot")
+	metrics := make([]models.SeqResult, 0)
 
-	resp, err := e.reporter.GetInFormat(id, format)
+	resp, err := e.reporter.GetHistogramMetricInFormat(id)
 	if err != nil {
 
 	}
+	err = json.Unmarshal(resp, &metrics)
 
-	response := fmt.Sprintf("%s", resp)
-
-	return response
+	return metrics
 }
 
 func makeTimestamp(value int) float64 {
@@ -187,5 +172,11 @@ func milliseconds(d int) float64 {
 	convertMs := time.Duration(d)
 
 	msec, nsec := convertMs/time.Millisecond, convertMs%time.Millisecond
+	return float64(msec) + float64(nsec)/1e6
+}
+
+func millisecondsLatencies(d time.Duration) float64 {
+
+	msec, nsec := d/time.Millisecond, d%time.Millisecond
 	return float64(msec) + float64(nsec)/1e6
 }

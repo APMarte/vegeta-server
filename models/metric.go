@@ -115,7 +115,7 @@ var ReqStsCode = &Metric{
 }
 
 var Histogram = &Metric{
-	ID:   "Histogram",
+	ID:   "histogram",
 	Name: "request_duration_histogram",
 	Type: "histogram_vec",
 	Args: []string{"id"},
